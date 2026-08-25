@@ -14,6 +14,7 @@ export function SectorPanel({ stats, synced, zoom, onZoom }: SectorPanelProps) {
 
   return (
     <aside className="sector-panel">
+      <div className="sheet-handle" aria-hidden />
       <div className="lead-cards">
         {up && (
           <button

@@ -27,13 +27,15 @@ function Group({
   label,
   hint,
   children,
+  className,
 }: {
   label: string;
   hint: string;
   children: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="tool">
+    <div className={`tool ${className ?? ""}`.trim()}>
       <span className="tool-k">{label}</span>
       {children}
       <span className="tool-d">{hint}</span>
@@ -60,7 +62,8 @@ export function WatchBar({
 }: WatchBarProps) {
   return (
     <div className="toolbar">
-      <Group label="시장" hint="볼 거래소">
+      <div className="toolbar-filters">
+      <Group label="시장" hint="볼 거래소" className="tool-market">
         <div className="tabs">
           {(["ALL", "KOSPI", "KOSDAQ"] as const).map((key) => (
             <button
@@ -82,7 +85,7 @@ export function WatchBar({
         </div>
       </Group>
 
-      <Group label="칸 크기" hint="넓이가 의미하는 값">
+      <Group label="칸 크기" hint="넓이가 의미하는 값" className="tool-size">
         <div className="tabs">
           <button
             type="button"
@@ -103,7 +106,7 @@ export function WatchBar({
         </div>
       </Group>
 
-      <Group label="관심" hint="칸을 눌러 담기">
+      <Group label="관심" hint="칸을 눌러 담기" className="tool-watch">
         <div className="watch-row">
           <button
             type="button"
@@ -136,14 +139,20 @@ export function WatchBar({
         </div>
       </Group>
 
-      <Group label="찾기" hint="이름·코드">
+      <Group label="찾기" hint="이름·코드" className="tool-search">
         <input
+          type="search"
+          enterKeyHint="search"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
           value={query}
           onChange={(e) => onQuery(e.target.value)}
           placeholder="종목 / 코드"
           title="일치하는 칸만 밝게 남깁니다."
         />
       </Group>
+      </div>
 
       <div className="pins">
         {pins.length === 0 && (

@@ -43,6 +43,7 @@ export function Heatmap({
   stocksRef.current = stocks;
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [tooltip, setTooltip] = useState<Tooltip | null>(null);
+  const [docked, setDocked] = useState(false);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -57,12 +58,25 @@ export function Heatmap({
       const code = cell?.getAttribute("data-code");
       if (!code) return;
       const stock = stocksRef.current.find((s) => s.code === code);
-      if (stock) pinRef.current?.(stock);
+      if (!stock) return;
+      pinRef.current?.(stock);
+      if (window.matchMedia("(pointer: coarse)").matches) {
+        setDocked(true);
+        setTooltip({ x: 0, y: 0, stock });
+      }
     };
     el.addEventListener("click", onPin);
+    const onResize = () => {
+      if (!window.matchMedia("(pointer: coarse)").matches) {
+        setDocked(false);
+        setTooltip(null);
+      }
+    };
+    window.addEventListener("resize", onResize);
     return () => {
       obs.disconnect();
       el.removeEventListener("click", onPin);
+      window.removeEventListener("resize", onResize);
     };
   }, []);
 
@@ -148,15 +162,20 @@ export function Heatmap({
                 className={className}
                 data-code={stock.code}
                 onMouseMove={(e) => {
+                  if (window.matchMedia("(pointer: coarse)").matches) return;
                   const box = wrapRef.current?.getBoundingClientRect();
                   if (!box) return;
+                  setDocked(false);
                   setTooltip({
                     x: e.clientX - box.left,
                     y: e.clientY - box.top,
                     stock,
                   });
                 }}
-                onMouseLeave={() => setTooltip(null)}
+                onMouseLeave={() => {
+                  if (window.matchMedia("(pointer: coarse)").matches) return;
+                  setTooltip(null);
+                }}
               >
                 <rect
                   x={node.x0}
@@ -195,11 +214,15 @@ export function Heatmap({
       )}
       {tooltip && (
         <div
-          className="tip"
-          style={{
-            left: Math.min(tooltip.x + 14, size.w - 220),
-            top: Math.min(tooltip.y + 14, size.h - 200),
-          }}
+          className={`tip ${docked ? "tip-dock" : ""}`}
+          style={
+            docked
+              ? undefined
+              : {
+                  left: Math.min(tooltip.x + 14, size.w - 220),
+                  top: Math.min(tooltip.y + 14, size.h - 200),
+                }
+          }
         >
           <div className="tip-name">{tooltip.stock.name}</div>
           <div className="tip-meta">

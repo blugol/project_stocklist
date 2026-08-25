@@ -38,10 +38,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    host: "localhost",
+    host: true,
     strictPort: true,
     open: "http://localhost:5173/",
+    allowedHosts: true,
     proxy,
   },
-  preview: { proxy },
+  preview: { host: true, proxy },
 });

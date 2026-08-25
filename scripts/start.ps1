@@ -12,6 +12,20 @@ function Test-Ready {
 
 function Open-App {
   Start-Process "http://localhost:5173/"
+  $ip = (
+    Get-NetIPAddress -AddressFamily IPv4 |
+    Where-Object {
+      $_.IPAddress -notlike "127.*" -and
+      $_.IPAddress -notlike "169.254.*" -and
+      $_.PrefixOrigin -ne "WellKnown"
+    } |
+    Select-Object -ExpandProperty IPAddress -First 1
+  )
+  if ($ip) {
+    Write-Host ""
+    Write-Host "Phone (same Wi-Fi): http://$ip:5173/"
+    Write-Host ""
+  }
 }
 
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
