@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { changeTextColor, formatChange } from "./lib/format";
 import { ZONE_HINT, ZONE_LABEL } from "./lib/setup";
 import type { WatchLane, WatchOrder, WatchPick } from "./lib/watchOrder";
-import { LEADERS_PER_SECTOR, watchPickCount } from "./lib/watchOrder";
+import { MARKET_LABEL, watchPickCount } from "./lib/watchOrder";
 import { PIN_MAX } from "./lib/watch";
 import type { Stock } from "./types";
 
@@ -66,8 +66,9 @@ export function WatchOrderPanel({
         </header>
 
         <p className="guide-lead">
-          동조 업종 {order.syncedCount}곳 중 기여가 큰 {order.sectorCount}곳, 시총 대장{" "}
-          {LEADERS_PER_SECTOR}개입니다. 등락률 1등이 아닙니다. 타점은 HTS 3분봉에서 봅니다.
+          동조 업종 {order.syncedCount}곳 중 기여가 큰 {order.sectorCount}곳입니다. 업종마다
+          코스피 시총 1등과 코스닥 시총 1등입니다. 등락률 1등이 아닙니다. 타점은 HTS 3분봉에서
+          봅니다.
         </p>
 
         {total === 0 ? (
@@ -130,6 +131,7 @@ function OrderRow({
         <span className="order-body">
           <span className="order-name">
             {stock.name}
+            <em className="order-mkt">{MARKET_LABEL[stock.market]}</em>
             <em className={`zone zone-${pick.zone}`}>{ZONE_LABEL[pick.zone]}</em>
             {pick.role === 1 ? <em className="sync">대장</em> : <em className="order-role">2번</em>}
           </span>

@@ -1,11 +1,13 @@
-import type { Stock } from "../types";
+import type { Market, Stock } from "../types";
 import { priceZone, SYNC } from "./setup";
-
-/** 가이드와 같음. 동조 업종에서 시총 대장만 1~2개. */
-export const LEADERS_PER_SECTOR = 2;
 
 /** 창에 올릴 동조 업종 수. 기여가 큰 곳부터. */
 export const ORDER_SECTOR_CAP = 6;
+
+export const MARKET_LABEL: Record<Market, string> = {
+  KOSPI: "코스피",
+  KOSDAQ: "코스닥",
+};
 
 export type WatchLane = "early" | "high" | "mid";
 
@@ -13,7 +15,7 @@ export interface WatchPick {
   rank: number;
   stock: Stock;
   zone: WatchLane;
-  /** 업종 안 시총 순위. 1이 대장. */
+  /** 그 시장 안 시총 순위. 1이 그 시장 대장. */
   role: 1 | 2;
   lit: number;
   avg: number;
@@ -29,8 +31,33 @@ export interface WatchOrder {
 
 const LANES: WatchLane[] = ["early", "high", "mid"];
 
+function byCap(a: Stock, b: Stock): number {
+  return b.marketCap - a.marketCap;
+}
+
+/** 업종마다 코스피 1등, 코스닥 1등. 한쪽만 있으면 그 시장 1~2등. */
+function pickLeaders(items: Stock[]): { stock: Stock; role: 1 | 2 }[] {
+  const alive = (s: Stock) => priceZone(s.change) !== "down";
+  const kospi = items.filter((s) => s.market === "KOSPI").sort(byCap);
+  const kosdaq = items.filter((s) => s.market === "KOSDAQ").sort(byCap);
+  const k = kospi.find(alive);
+  const q = kosdaq.find(alive);
+
+  if (k && q) {
+    return [
+      { stock: k, role: 1 },
+      { stock: q, role: 1 },
+    ];
+  }
+
+  return (k ? kospi : kosdaq)
+    .filter(alive)
+    .slice(0, 2)
+    .map((stock, i) => ({ stock, role: (i + 1) as 1 | 2 }));
+}
+
 /**
- * 동조 업종의 시총 대장을, 보는 순서대로 나눕니다.
+ * 동조 업종의 코스피·코스닥 시총 대장을, 보는 순서대로 나눕니다.
  * 기여가 큰 동조부터, 초입 → 고구간 → 중간. 하락은 뺍니다.
  * 매수 사인이 아닙니다.
  */
@@ -49,12 +76,10 @@ export function buildWatchOrder(
   const sectors = [...synced]
     .map((name) => {
       const items = grouped.get(name) ?? [];
-      const top = [...items].sort((a, b) => b.marketCap - a.marketCap).slice(0, SYNC.topN);
+      const top = [...items].sort(byCap).slice(0, SYNC.topN);
       const lit = top.filter((s) => s.change >= SYNC.lit).length;
       const avg = top.length ? top.reduce((sum, s) => sum + s.change, 0) / top.length : 0;
-      const leaders = top
-        .slice(0, LEADERS_PER_SECTOR)
-        .filter((s) => priceZone(s.change) !== "down");
+      const leaders = pickLeaders(items);
       const contribution = contributionBySector.get(name) ?? 0;
       return { name, lit, avg, leaders, contribution };
     })
@@ -64,18 +89,18 @@ export function buildWatchOrder(
 
   const buckets: Record<WatchLane, WatchPick[]> = { early: [], high: [], mid: [] };
   for (const sector of sectors) {
-    sector.leaders.forEach((stock, i) => {
-      const zone = priceZone(stock.change);
-      if (zone === "down") return;
+    for (const leader of sector.leaders) {
+      const zone = priceZone(leader.stock.change);
+      if (zone === "down") continue;
       buckets[zone].push({
         rank: 0,
-        stock,
+        stock: leader.stock,
         zone,
-        role: (i + 1) as 1 | 2,
+        role: leader.role,
         lit: sector.lit,
         avg: sector.avg,
       });
-    });
+    }
   }
 
   let rank = 1;

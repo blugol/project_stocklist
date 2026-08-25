@@ -489,7 +489,8 @@ input:focus-visible {
   font-variant-numeric: tabular-nums;
 }
 
-.order-role {
+.order-role,
+.order-mkt {
   font-style: normal;
   font-size: 10px;
   font-weight: 700;
@@ -497,6 +498,10 @@ input:focus-visible {
   border-radius: 99px;
   color: var(--muted);
   background: var(--bg-hover);
+}
+
+.order-mkt {
+  color: #e4e4e7;
 }
 
 .order-pin {
