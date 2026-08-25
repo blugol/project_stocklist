@@ -4,12 +4,14 @@ import { Guide } from "./Guide";
 import { Heatmap } from "./Heatmap";
 import { SectorPanel } from "./SectorPanel";
 import { WatchBar } from "./WatchBar";
+import { WatchOrderPanel } from "./WatchOrder";
 import { STOCKS } from "./data/stocks";
 import { beep, unlockAudio } from "./lib/alertSound";
 import { formatChange, formatIndex, formatTime } from "./lib/format";
 import { fetchIndexes, fetchLiveQuotes, type IndexQuote, type Session } from "./lib/quotes";
 import { sectorStats } from "./lib/sectors";
 import { syncSectors } from "./lib/setup";
+import { buildWatchOrder } from "./lib/watchOrder";
 import { applyTicks, crossedAlert } from "./lib/ticks";
 import { fetchMarketItems, fetchSectorMap, stocksFromItems } from "./lib/universe";
 import { loadWatch, PIN_MAX, saveWatch } from "./lib/watch";
@@ -38,6 +40,7 @@ export default function App() {
   const [threshold, setThreshold] = useState(saved.current.threshold);
   const [flashCodes, setFlashCodes] = useState<Set<string>>(new Set());
   const [guide, setGuide] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
   const gotLive = useRef(false);
   const universe = useRef<Stock[]>([]);
   const tickCache = useRef(new Map());
@@ -140,6 +143,10 @@ export default function App() {
 
   const stats = useMemo(() => sectorStats(scoped), [scoped]);
   const synced = useMemo(() => syncSectors(scoped), [scoped]);
+  const watchOrder = useMemo(() => {
+    const contribution = new Map(stats.map((s) => [s.name, s.contribution]));
+    return buildWatchOrder(scoped, synced, contribution);
+  }, [scoped, synced, stats]);
   const sectorCount = useMemo(() => new Set(scoped.map((s) => s.sector)).size, [scoped]);
 
   const avg =
@@ -203,15 +210,35 @@ export default function App() {
               <div className="bar" />
               <span>+6%</span>
             </div>
-            <button
-              type="button"
-              className={`guide-open ${guide ? "on" : ""}`}
-              aria-expanded={guide}
-              title="이 화면을 어떤 기준으로 보면 되는지 엽니다"
-              onClick={() => setGuide(true)}
-            >
-              보는 법
-            </button>
+            <div className="board-actions">
+              <button
+                type="button"
+                className={`guide-open order-open ${orderOpen ? "on" : ""}`}
+                aria-expanded={orderOpen}
+                title="동조 업종의 대장을 보는 순서대로 엽니다"
+                onClick={() => {
+                  setGuide(false);
+                  setOrderOpen(true);
+                }}
+              >
+                볼 순서
+                {watchOrder.early.length > 0 && (
+                  <i className="order-count">{watchOrder.early.length}</i>
+                )}
+              </button>
+              <button
+                type="button"
+                className={`guide-open ${guide ? "on" : ""}`}
+                aria-expanded={guide}
+                title="이 화면을 어떤 기준으로 보면 되는지 엽니다"
+                onClick={() => {
+                  setOrderOpen(false);
+                  setGuide(true);
+                }}
+              >
+                보는 법
+              </button>
+            </div>
           </div>
         </div>
 
@@ -259,6 +286,20 @@ export default function App() {
         />
         <SectorPanel stats={stats} synced={synced} zoom={zoom} onZoom={setZoom} />
       </div>
+      <WatchOrderPanel
+        open={orderOpen}
+        order={watchOrder}
+        pinned={pinSet}
+        pinCount={pins.length}
+        zoom={zoom}
+        onClose={() => setOrderOpen(false)}
+        onFocus={(stock) => {
+          setWatchOnly(false);
+          setZoom(stock.sector);
+          setQuery(stock.name);
+        }}
+        onTogglePin={togglePin}
+      />
       <Guide open={guide} onClose={() => setGuide(false)} />
     </div>
   );

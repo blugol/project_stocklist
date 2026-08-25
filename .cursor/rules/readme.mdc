@@ -1,0 +1,18 @@
+---
+description: README.md가 이 프로젝트의 유일한 원칙이다. 작업이 끝나면 묻지 말고 커밋하고 푸시한다.
+alwaysApply: true
+---
+
+# README가 원칙이다
+
+매 작업 전에 `README.md`를 읽고 그대로 따른다. README에 없는 규칙을 지어내지 않는다.
+
+## 배포
+
+코드를 고치거나 진행이 끝나면 사용자에게 묻지 말고 바로:
+
+1. 비밀 파일은 빼고 `git add`
+2. `git commit`
+3. `git push origin HEAD`
+
+Vercel은 GitHub `main`을 배포한다. 로컬에만 두면 bat 화면과 Vercel 주소가 달라진다.

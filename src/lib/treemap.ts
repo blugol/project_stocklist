@@ -58,12 +58,13 @@ export function layoutTreemap(
     .sum((d) => ("code" in d && "marketCap" in d ? sizeOf(d, sizeMode) : 0))
     .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
 
+  const compact = width < 640;
   treemap<TreemapDatum>()
     .tile(treemapSquarify.ratio(1.2))
     .size([width, height])
-    .paddingInner(2)
-    .paddingOuter(2)
-    .paddingTop(24)
+    .paddingInner(compact ? 4 : 2)
+    .paddingOuter(compact ? 3 : 2)
+    .paddingTop(compact ? 32 : 24)
     .round(true)(root);
 
   return root as HierarchyRectangularNode<TreemapDatum>;

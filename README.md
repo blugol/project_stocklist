@@ -1,71 +1,36 @@
-# CLAUDE.md
+# 시황 창
 
-Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+오늘 햄버거를 어디에 대입할지 고르는 화면입니다. 타점은 HTS 3분봉에서 봅니다. 매수 봇이 아닙니다.
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+**이 파일이 원칙입니다.** 코드를 짜거나 고칠 때 다른 추측보다 여기를 따릅니다. Cursor 규칙도 이 파일을 가리킵니다.
 
-## 1\. Think Before Coding
+## 배포 — 매번, 묻지 말고
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+로컬(bat, `npm run dev`)과 Vercel은 다른 컴퓨터입니다. Vercel은 GitHub `main`만 봅니다.
 
-Before implementing:
+코드를 고치거나 진행이 끝나면 **반드시**:
 
-* State your assumptions explicitly. If uncertain, ask.
-* If multiple interpretations exist, present them - don't pick silently.
-* If a simpler approach exists, say so. Push back when warranted.
-* If something is unclear, stop. Name what's confusing. Ask.
+1. 비밀(`.env`, 키, 토큰)은 커밋하지 않는다
+2. `git add`로 이번 작업 파일을 담는다
+3. `git commit` 한다
+4. `git push origin HEAD` 한다
 
-## 2\. Simplicity First
+「올려 드릴까요?」라고 묻지 않습니다. 저장만 하고 끝내지 않습니다. 푸시해야 핸드폰 Vercel 주소와 bat으로 연 창이 같아집니다.
 
-**Minimum code that solves the problem. Nothing speculative.**
+## 제품
 
-* No features beyond what was asked.
-* No abstractions for single-use code.
-* No "flexibility" or "configurability" that wasn't requested.
-* No error handling for impossible scenarios.
-* If you write 200 lines and it could be 50, rewrite it.
+- 기여도 공식은 `src/lib/sectors.ts`에 있습니다. **건드리지 않습니다.**
+- 동조는 업종 태그입니다. 윗물이 같이 빨간 업종입니다. 종목 매수 사인이 아닙니다.
+- 동조 보는 법: 동조 업종 → 칸이 큰 대장 1~2개(등락률 1등이 아님) → 구간 → HTS 3분봉.
+- 등락 구간: 0% 미만 하락, 10% 미만 초입, 15% 미만 중간, 그 이상은 고구간.
+- 볼 순서는 동조 업종의 시총 대장을 초입 → 고구간 → 중간으로 나열합니다. 매수 사인이 아닙니다.
+- ETF·ETN은 빼니다. 장 끝나면 장마감입니다.
+- 분봉 탐지, 자동매매, 체력 자동 수집, NXT 8시를 만들지 않습니다.
+- 15초 깜빡임은 햄버거 봉이 아닙니다.
 
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+## 코딩
 
-## 3\. Surgical Changes
-
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-
-* Don't "improve" adjacent code, comments, or formatting.
-* Don't refactor things that aren't broken.
-* Match existing style, even if you'd do it differently.
-* If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-
-* Remove imports/variables/functions that YOUR changes made unused.
-* Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4\. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-
-* "Add validation" → "Write tests for invalid inputs, then make them pass"
-* "Fix the bug" → "Write a test that reproduces it, then make it pass"
-* "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-
-```
-1. \[Step] → verify: \[check]
-2. \[Step] → verify: \[check]
-3. \[Step] → verify: \[check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
-\---
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
-
+- 물어본 것만 고칩니다. 옆 코드를 개선하지 않습니다.
+- 짧게 짭니다. 한 번만 쓰는 추상화를 만들지 않습니다.
+- 웹 UI를 고치면 브라우저에서 해당 흐름을 눌러 확인합니다.
+- 가정은 말로 드러냅니다. 애매하면 먼저 묻습니다.

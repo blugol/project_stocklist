@@ -1,12 +1,17 @@
 export function changeColor(change: number): string {
   const clamped = Math.max(-6, Math.min(6, change));
-  if (Math.abs(clamped) < 0.02) return "#5c5c5c";
+  if (Math.abs(clamped) < 0.02) return "#1f1f24";
 
   const t = Math.abs(clamped) / 6;
   if (clamped > 0) {
-    return mix("#6a3a3a", "#d32f2f", ease(t));
+    return mix("#4c1218", "#c81e3a", ease(t));
   }
-  return mix("#3a4a62", "#1e5aa8", ease(t));
+  return mix("#102a4a", "#1d4ed8", ease(t));
+}
+
+export function changeTextColor(change: number): string {
+  if (Math.abs(change) < 0.02) return "#d4d4d8";
+  return change > 0 ? "#fb7185" : "#7dd3fc";
 }
 
 function ease(t: number): number {

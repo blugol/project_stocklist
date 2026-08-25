@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CellNode } from "./lib/treemap";
 import { buildTree, isStock, layoutTreemap } from "./lib/treemap";
-import { changeColor, formatCap, formatChange, formatPrice } from "./lib/format";
+import { changeColor, changeTextColor, formatCap, formatChange, formatPrice } from "./lib/format";
 import { priceZone, ZONE_HINT, ZONE_LABEL } from "./lib/setup";
 import type { Market, SizeMode, Stock } from "./types";
 
@@ -16,6 +16,12 @@ interface HeatmapProps {
   pinned?: Set<string>;
   synced?: Set<string>;
   onTogglePin?: (stock: Stock) => void;
+}
+
+function clipLabel(text: string, maxPx: number, fontPx: number): string {
+  const max = Math.max(2, Math.floor(maxPx / (fontPx * 1.08)));
+  if (text.length <= max) return text;
+  return `${text.slice(0, max - 1)}…`;
 }
 
 interface Tooltip {
@@ -91,6 +97,7 @@ export function Heatmap({
 
   const highlight = query.trim().toLowerCase();
 
+  const compact = size.w > 0 && size.w < 640;
   const cells = root?.leaves() ?? [];
   const sectors = root?.children ?? [];
 
@@ -111,24 +118,27 @@ export function Heatmap({
             if (isStock(d)) return null;
             const label = "name" in d ? d.name : "";
             const w = sector.x1 - sector.x0;
-            if (w < 48) return null;
+            const barH = compact ? 30 : 22;
+            const labelSize = compact ? 14 : 12;
+            if (w < (compact ? 64 : 48)) return null;
             return (
               <g key={label}>
                 <rect
                   x={sector.x0}
                   y={sector.y0}
                   width={w}
-                  height={22}
+                  height={barH}
                   className="sector-bar"
                   onClick={() => onZoom(zoom === label ? null : label)}
                 />
                 <text
                   x={sector.x0 + 8}
-                  y={sector.y0 + 15}
+                  y={sector.y0 + (compact ? 20 : 15)}
                   className="sector-label"
+                  fontSize={labelSize}
                   onClick={() => onZoom(zoom === label ? null : label)}
                 >
-                  {label} ›
+                  {`${clipLabel(label, w - 22, labelSize)} ›`}
                 </text>
               </g>
             );
@@ -143,9 +153,16 @@ export function Heatmap({
               !highlight ||
               stock.name.toLowerCase().includes(highlight) ||
               stock.code.includes(highlight);
-            const showName = w >= 44 && h >= 28;
-            const showPct = w >= 44 && h >= 42;
-            const font = Math.max(10, Math.min(15, w / 7, h / 3.2));
+            const font = compact
+              ? Math.max(13, Math.min(18, w / 5.2, h / 2.4))
+              : Math.max(11, Math.min(15, w / 7, h / 3.2));
+            const nameBudget = Math.floor((w - 10) / (font * 1.08));
+            const showName = compact
+              ? w >= 72 && h >= 40 && nameBudget >= 3
+              : w >= 44 && h >= 28;
+            const showPct = compact
+              ? w >= 58 && h >= (showName ? 56 : 32)
+              : w >= 44 && h >= 42;
             const flashing = flashCodes?.has(stock.code);
             const isPinned = pinned?.has(stock.code);
             const className = [
@@ -191,7 +208,7 @@ export function Heatmap({
                     className="cell-name"
                     fontSize={font}
                   >
-                    {stock.name}
+                    {clipLabel(stock.name, w - 8, font)}
                   </text>
                 )}
                 {showPct && (
@@ -199,7 +216,7 @@ export function Heatmap({
                     x={node.x0 + w / 2}
                     y={node.y0 + h / 2 + font}
                     className="cell-pct"
-                    fontSize={Math.max(10, font - 1)}
+                    fontSize={compact ? Math.max(12, font - 1) : Math.max(10, font - 1)}
                   >
                     {formatChange(stock.change)}
                   </text>
@@ -243,7 +260,7 @@ export function Heatmap({
           </div>
           <div className="tip-row">
             <span>등락률</span>
-            <b style={{ color: changeColor(tooltip.stock.change) }}>
+            <b style={{ color: changeTextColor(tooltip.stock.change) }}>
               {formatChange(tooltip.stock.change)}
             </b>
           </div>

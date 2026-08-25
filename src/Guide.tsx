@@ -45,7 +45,8 @@ export function Guide({ open, onClose }: GuideProps) {
         <ol className="guide-steps">
           <li>
             <b>동조 섹터</b>
-            기여도 1등보다, 윗물이 같이 빨간 업종을 먼저 봅니다.
+            기여도 1등보다, 윗물이 같이 빨간 업종을 먼저 봅니다. 볼 순서 창에 그 대장만 모아
+            둡니다.
           </li>
           <li>
             <b>대장 1~2개</b>
