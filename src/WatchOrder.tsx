@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { changeTextColor, formatChange } from "./lib/format";
 import { ZONE_HINT, ZONE_LABEL } from "./lib/setup";
 import type { WatchLane, WatchOrder, WatchPick } from "./lib/watchOrder";
-import { MARKET_LABEL, watchPickCount } from "./lib/watchOrder";
+import { MARKET_LABEL, watchOrderNotes, watchPickCount } from "./lib/watchOrder";
 import { PIN_MAX } from "./lib/watch";
 import type { Stock } from "./types";
 
@@ -74,7 +74,23 @@ export function WatchOrderPanel({
         {total === 0 ? (
           <p className="order-empty">지금은 동조 업종이 없습니다. 윗물이 같이 오를 때까지 기다립니다.</p>
         ) : (
-          LANES.map((lane) => {
+          <>
+            <section className="order-notes">
+              <h3>업종별로 보면</h3>
+              <p>
+                초입 {order.early.length} · 고구간 {order.high.length} · 중간 {order.mid.length}. 이미
+                골라 둔 대장입니다. 매수 사인이 아닙니다.
+              </p>
+              <ul>
+                {watchOrderNotes(order).map((note) => (
+                  <li key={note.sector}>
+                    <b>{note.sector}</b>
+                    {note.line}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          {LANES.map((lane) => {
             const rows = order[lane.key];
             if (!rows.length) return null;
             return (
@@ -96,7 +112,8 @@ export function WatchOrderPanel({
                 </ol>
               </section>
             );
-          })
+          })}
+          </>
         )}
       </aside>
     </div>

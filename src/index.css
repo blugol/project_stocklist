@@ -389,6 +389,42 @@ input:focus-visible {
   gap: 8px;
 }
 
+.order-notes {
+  margin: 0 0 4px;
+  padding: 12px 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.order-notes h3 {
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.order-notes > p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.order-notes ul {
+  gap: 10px;
+}
+
+.order-notes li {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d4d4d8;
+}
+
+.order-notes b {
+  display: block;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
 .order-empty {
   margin: 8px 0 0;
   font-size: 14px;

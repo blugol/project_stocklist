@@ -1,5 +1,5 @@
 import type { Market, Stock } from "../types";
-import { priceZone, SYNC } from "./setup";
+import { priceZone, SYNC, ZONE_LABEL } from "./setup";
 
 /** 창에 올릴 동조 업종 수. 기여가 큰 곳부터. */
 export const ORDER_SECTOR_CAP = 6;
@@ -119,4 +119,32 @@ export function buildWatchOrder(
 
 export function watchPickCount(order: WatchOrder): number {
   return order.early.length + order.high.length + order.mid.length;
+}
+
+export interface WatchNote {
+  sector: string;
+  line: string;
+}
+
+/** 볼 순서에 이미 있는 대장을 업종별로 한 줄로 묶습니다. 새 신호가 아닙니다. */
+export function watchOrderNotes(order: WatchOrder): WatchNote[] {
+  const picks = [...order.early, ...order.high, ...order.mid].sort((a, b) => a.rank - b.rank);
+  const grouped = new Map<string, WatchPick[]>();
+  for (const pick of picks) {
+    const list = grouped.get(pick.stock.sector) ?? [];
+    list.push(pick);
+    grouped.set(pick.stock.sector, list);
+  }
+
+  return [...grouped.entries()].map(([sector, rows]) => {
+    const line = rows
+      .map((p) => `${p.stock.name} ${MARKET_LABEL[p.stock.market]} ${ZONE_LABEL[p.zone]}`)
+      .join(" · ");
+    const markets = new Set(rows.map((p) => p.stock.market));
+    if (markets.size === 1) {
+      const missing = rows[0].stock.market === "KOSPI" ? "코스닥" : "코스피";
+      return { sector, line: `${line} · ${missing} 대장 없음` };
+    }
+    return { sector, line };
+  });
 }
