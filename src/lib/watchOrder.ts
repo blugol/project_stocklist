@@ -138,15 +138,23 @@ function zoneLine(pick: WatchPick): string {
 
 export interface WatchNote {
   sector: string;
-  line: string;
+  lines: string[];
+  names: string[];
+}
+
+export interface WatchLead {
+  sectors: string[];
+  lines: string[];
 }
 
 /** 어디를 어떤 관점으로 볼지. 종목 수가 아닙니다. */
-export function watchOrderLead(order: WatchOrder): string {
+export function watchOrderLead(order: WatchOrder): WatchLead {
   const notes = watchOrderNotes(order);
-  const head = notes.slice(0, 3).map((n) => n.sector);
-  const start = head.length ? `${head.join("·")}부터 봅니다.` : "동조 업종부터 봅니다.";
-  return `${start} 시총 대장만 적었습니다. 타점은 HTS 3분봉입니다.`;
+  const sectors = notes.slice(0, 3).map((n) => n.sector);
+  return {
+    sectors: sectors.length ? sectors : ["동조 업종"],
+    lines: ["시총 대장만 적었습니다.", "타점은 HTS 3분봉입니다."],
+  };
 }
 
 /** 업종마다 코스피·코스닥 구간의 관점입니다. 새 신호가 아닙니다. */
@@ -160,21 +168,24 @@ export function watchOrderNotes(order: WatchOrder): WatchNote[] {
   }
 
   return [...grouped.entries()].map(([sector, rows]) => {
-    const names = rows.map((p) => p.stock.name).join(" · ");
+    const names = rows.map((p) => p.stock.name);
     const markets = new Set(rows.map((p) => p.stock.market));
     const zones = new Set(rows.map((p) => p.zone));
     const zone = rows[0].zone;
 
     if (markets.size === 2 && zones.size === 1) {
-      return { sector, line: `양쪽 다 ${viewOf(zone)} ${names}` };
+      return { sector, lines: [`양쪽 다 ${viewOf(zone)}`], names };
     }
     if (markets.size === 2) {
-      return { sector, line: `${rows.map(zoneLine).join(" ")} ${names}` };
+      return { sector, lines: rows.map(zoneLine), names };
     }
 
     const missing = rows[0].stock.market === "KOSPI" ? "코스닥" : "코스피";
     const only = `${MARKET_LABEL[rows[0].stock.market]}만 있습니다.`;
-    const view = zones.size === 1 ? viewOf(zone) : `${rows.map(zoneLine).join(" ")}`;
-    return { sector, line: `${only} ${view} ${missing} 대장 없음. ${names}` };
+    const lines =
+      zones.size === 1
+        ? [`${only} ${viewOf(zone)}`, `${missing} 대장 없음.`]
+        : [`${only} ${missing} 대장 없음.`, ...rows.map(zoneLine)];
+    return { sector, lines, names };
   });
 }

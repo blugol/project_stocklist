@@ -45,6 +45,7 @@ export function WatchOrderPanel({
   if (!open) return null;
 
   const total = watchPickCount(order);
+  const lead = total > 0 ? watchOrderLead(order) : null;
 
   return (
     <div className="guide-back" onClick={onClose}>
@@ -65,14 +66,22 @@ export function WatchOrderPanel({
           </button>
         </header>
 
-        <p className="guide-lead">
-          {total === 0
-            ? "지금은 동조 업종이 없습니다. 윗물이 같이 오를 때까지 기다립니다."
-            : watchOrderLead(order)}
-        </p>
-
-        {total > 0 && (
+        {!lead ? (
+          <p className="guide-lead">지금은 동조 업종이 없습니다. 윗물이 같이 오를 때까지 기다립니다.</p>
+        ) : (
           <>
+            <section className="order-hero">
+              <p className="order-hero-kicker">먼저 볼 업종</p>
+              <ul className="order-hero-tags">
+                {lead.sectors.map((name) => (
+                  <li key={name}>{name}</li>
+                ))}
+              </ul>
+              {lead.lines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </section>
+
             <section className="order-notes">
               <h3>업종별로 보면</h3>
               <p>등락률 1등이 아닙니다. 시총 대장의 구간입니다. 매수 사인이 아닙니다.</p>
@@ -80,34 +89,42 @@ export function WatchOrderPanel({
                 {watchOrderNotes(order).map((note) => (
                   <li key={note.sector}>
                     <b>{note.sector}</b>
-                    {note.line}
+                    {note.lines.map((line) => (
+                      <p key={line}>{line}</p>
+                    ))}
+                    <span className="order-note-names">
+                      {note.names.map((name) => (
+                        <em key={name}>{name}</em>
+                      ))}
+                    </span>
                   </li>
                 ))}
               </ul>
             </section>
-          {LANES.map((lane) => {
-            const rows = order[lane.key];
-            if (!rows.length) return null;
-            return (
-              <section key={lane.key} className="order-lane">
-                <h3>{lane.title}</h3>
-                <p>{ZONE_HINT[lane.key]}</p>
-                <ol className="order-list">
-                  {rows.map((pick) => (
-                    <OrderRow
-                      key={pick.stock.code}
-                      pick={pick}
-                      pinned={pinned.has(pick.stock.code)}
-                      pinFull={pinCount >= PIN_MAX && !pinned.has(pick.stock.code)}
-                      active={zoom === pick.stock.sector}
-                      onFocus={onFocus}
-                      onTogglePin={onTogglePin}
-                    />
-                  ))}
-                </ol>
-              </section>
-            );
-          })}
+
+            {LANES.map((lane) => {
+              const rows = order[lane.key];
+              if (!rows.length) return null;
+              return (
+                <section key={lane.key} className="order-lane">
+                  <h3>{lane.title}</h3>
+                  <p>{ZONE_HINT[lane.key]}</p>
+                  <ol className="order-list">
+                    {rows.map((pick) => (
+                      <OrderRow
+                        key={pick.stock.code}
+                        pick={pick}
+                        pinned={pinned.has(pick.stock.code)}
+                        pinFull={pinCount >= PIN_MAX && !pinned.has(pick.stock.code)}
+                        active={zoom === pick.stock.sector}
+                        onFocus={onFocus}
+                        onTogglePin={onTogglePin}
+                      />
+                    ))}
+                  </ol>
+                </section>
+              );
+            })}
           </>
         )}
       </aside>
@@ -141,8 +158,13 @@ function OrderRow({
       >
         <span className="order-rank">{pick.rank}</span>
         <span className="order-body">
-          <span className="order-name">
-            {stock.name}
+          <span className="order-head">
+            <span className="order-title">{stock.name}</span>
+            <b className="order-chg" style={{ color: changeTextColor(stock.change) }}>
+              {formatChange(stock.change)}
+            </b>
+          </span>
+          <span className="order-tags">
             <em className="order-mkt">{MARKET_LABEL[stock.market]}</em>
             <em className={`zone zone-${pick.zone}`}>{ZONE_LABEL[pick.zone]}</em>
             {pick.role === 1 ? <em className="sync">대장</em> : <em className="order-role">2번</em>}
@@ -151,9 +173,6 @@ function OrderRow({
             {stock.sector} · 동조 {pick.lit}개 +{pick.avg.toFixed(1)}%
           </span>
         </span>
-        <b className="order-chg" style={{ color: changeTextColor(stock.change) }}>
-          {formatChange(stock.change)}
-        </b>
       </button>
       <button
         type="button"
