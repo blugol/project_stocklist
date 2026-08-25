@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { changeTextColor, formatChange } from "./lib/format";
 import { ZONE_HINT, ZONE_LABEL } from "./lib/setup";
 import type { WatchLane, WatchOrder, WatchPick } from "./lib/watchOrder";
-import { MARKET_LABEL, watchOrderNotes, watchPickCount } from "./lib/watchOrder";
+import { MARKET_LABEL, watchOrderLead, watchOrderNotes, watchPickCount } from "./lib/watchOrder";
 import { PIN_MAX } from "./lib/watch";
 import type { Stock } from "./types";
 
@@ -66,21 +66,16 @@ export function WatchOrderPanel({
         </header>
 
         <p className="guide-lead">
-          동조 업종 {order.syncedCount}곳 중 기여가 큰 {order.sectorCount}곳입니다. 업종마다
-          코스피 시총 1등과 코스닥 시총 1등입니다. 등락률 1등이 아닙니다. 타점은 HTS 3분봉에서
-          봅니다.
+          {total === 0
+            ? "지금은 동조 업종이 없습니다. 윗물이 같이 오를 때까지 기다립니다."
+            : watchOrderLead(order)}
         </p>
 
-        {total === 0 ? (
-          <p className="order-empty">지금은 동조 업종이 없습니다. 윗물이 같이 오를 때까지 기다립니다.</p>
-        ) : (
+        {total > 0 && (
           <>
             <section className="order-notes">
               <h3>업종별로 보면</h3>
-              <p>
-                초입 {order.early.length} · 고구간 {order.high.length} · 중간 {order.mid.length}. 이미
-                골라 둔 대장입니다. 매수 사인이 아닙니다.
-              </p>
+              <p>등락률 1등이 아닙니다. 시총 대장의 구간입니다. 매수 사인이 아닙니다.</p>
               <ul>
                 {watchOrderNotes(order).map((note) => (
                   <li key={note.sector}>
