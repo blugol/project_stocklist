@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#101010" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>코스피 · 코스닥</title>
+    <style>
+      .boot {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 48px 56px;
+        background: #101010;
+        color: #ececec;
+        font-family: Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      }
+    </style>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root">
+      <div class="boot">
+        <p style="margin:0;font-size:11px;font-weight:700;color:#c9a227">시황 창</p>
+        <h1 style="margin:6px 0 0;font-size:28px">코스피 · 코스닥</h1>
+        <p style="margin:10px 0 0;font-size:13px;color:#9a9a9a">시세와 업종을 같이 불러오는 중</p>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
