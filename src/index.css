@@ -767,6 +767,49 @@ input:focus-visible {
   color: var(--muted);
 }
 
+.order-log-idx {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.order-log-idx li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.order-log-idx span {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--faint);
+}
+
+.order-log-idx b {
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.order-log-idx strong {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.order-log-day .order-notes {
+  margin-top: 12px;
+}
+
+.order-log-day .order-notes li p {
+  color: #d4d4d8;
+}
+
 .order-log-list span {
   overflow: hidden;
   text-overflow: ellipsis;

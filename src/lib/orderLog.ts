@@ -1,9 +1,11 @@
 import type { Session } from "./quotes";
+import { formatChange, formatIndex } from "./format";
 import { ZONE_LABEL } from "./setup";
 import {
   MARKET_LABEL,
   watchOrderNotes,
   type WatchLane,
+  type WatchNote,
   type WatchOrder,
 } from "./watchOrder";
 
@@ -20,12 +22,20 @@ export interface OrderLogPick {
   change: number;
 }
 
+export interface OrderLogIndex {
+  code: "KOSPI" | "KOSDAQ";
+  value: number;
+  change: number;
+}
+
 export interface OrderLogDay {
   date: string;
   session: Session;
   savedAt: number;
   sectors: string[];
   picks: OrderLogPick[];
+  notes: WatchNote[];
+  indexes: OrderLogIndex[];
 }
 
 export function seoulDate(ts = Date.now()): string {
@@ -58,14 +68,26 @@ export function loadOrderLog(): OrderLogDay[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isDay).sort((a, b) => b.date.localeCompare(a.date));
+    return parsed
+      .filter(isDay)
+      .map((day) => ({
+        ...day,
+        notes: Array.isArray(day.notes) ? day.notes : [],
+        indexes: Array.isArray(day.indexes) ? day.indexes : [],
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date));
   } catch {
     return [];
   }
 }
 
-export function rememberOrder(order: WatchOrder, session: Session): void {
+export function rememberOrder(
+  order: WatchOrder,
+  session: Session,
+  indexes: OrderLogIndex[],
+): void {
   const date = seoulDate();
+  const notes = watchOrderNotes(order);
   const picks = [...order.early, ...order.high, ...order.mid]
     .sort((a, b) => a.rank - b.rank)
     .map((pick) => ({
@@ -81,15 +103,18 @@ export function rememberOrder(order: WatchOrder, session: Session): void {
     date,
     session,
     savedAt: Date.now(),
-    sectors: watchOrderNotes(order).map((note) => note.sector),
+    sectors: notes.map((note) => note.sector),
     picks,
+    notes,
+    indexes: indexes.filter((idx) => idx.code === "KOSPI" || idx.code === "KOSDAQ"),
   };
   const prev = loadOrderLog().find((day) => day.date === date);
   const same =
     !!prev &&
     prev.session === next.session &&
     JSON.stringify(prev.picks) === JSON.stringify(next.picks) &&
-    JSON.stringify(prev.sectors) === JSON.stringify(next.sectors);
+    JSON.stringify(prev.notes ?? []) === JSON.stringify(next.notes) &&
+    JSON.stringify(prev.indexes ?? []) === JSON.stringify(next.indexes);
   const log = [next, ...loadOrderLog().filter((day) => day.date !== date)].slice(0, MAX_DAYS);
   if (!same) localStorage.setItem(KEY, JSON.stringify(log));
   const saved = loadOrderLog();
@@ -105,8 +130,11 @@ export function formatOrderDay(day: OrderLogDay): string {
   const lines = [
     `금일 주도주  ${formatLogDate(day.date)}`,
     session,
-    "",
   ];
+  for (const idx of day.indexes ?? []) {
+    lines.push(`${MARKET_LABEL[idx.code]}  ${formatIndex(idx.value)}  ${formatChange(idx.change)}`);
+  }
+  lines.push("");
   if (!day.picks.length) {
     lines.push("이날 동조 업종이 없었습니다.");
     return lines.join("\n");
@@ -115,11 +143,16 @@ export function formatOrderDay(day: OrderLogDay): string {
     lines.push(`업종  ${day.sectors.join(" · ")}`);
     lines.push("");
   }
+  for (const note of day.notes ?? []) {
+    lines.push(note.sector);
+    if (note.names.length) lines.push(note.names.join(" · "));
+    for (const line of note.lines) lines.push(line);
+    lines.push("");
+  }
   for (const pick of day.picks) {
     const zone = isLane(pick.zone) ? ZONE_LABEL[pick.zone] : pick.zone;
-    const sign = pick.change > 0 ? "+" : "";
     lines.push(
-      `${pick.rank}. ${pick.name} (${pick.code})  ${MARKET_LABEL[pick.market]}  ${zone}  ${sign}${pick.change.toFixed(2)}%`,
+      `${pick.rank}. ${pick.name} (${pick.code})  ${MARKET_LABEL[pick.market]}  ${zone}  ${formatChange(pick.change)}`,
     );
     lines.push(`   ${pick.sector}`);
   }

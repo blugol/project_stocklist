@@ -159,8 +159,8 @@ export default function App() {
 
   useEffect(() => {
     if (live !== "live") return;
-    rememberOrder(logOrder, session);
-  }, [live, logOrder, session]);
+    rememberOrder(logOrder, session, indexes);
+  }, [live, logOrder, session, indexes]);
 
   const avg =
     scoped.reduce((s, x) => s + x.change * x.marketCap, 0) /

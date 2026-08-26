@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { changeTextColor, formatChange } from "./lib/format";
+import { changeTextColor, formatChange, formatIndex } from "./lib/format";
 import {
   copyText,
   downloadText,
@@ -236,6 +236,17 @@ function OrderLog({
         <p>
           {day.session === "OPEN" ? "정규장" : "장마감"}에 남겼습니다.
         </p>
+        {day.indexes.length > 0 && (
+          <ul className="order-log-idx">
+            {day.indexes.map((idx) => (
+              <li key={idx.code}>
+                <span>{MARKET_LABEL[idx.code]}</span>
+                <b>{formatIndex(idx.value)}</b>
+                <strong className={idx.change >= 0 ? "up" : "down"}>{formatChange(idx.change)}</strong>
+              </li>
+            ))}
+          </ul>
+        )}
         {!day.picks.length ? (
           <p className="order-empty">이날 동조 업종이 없었습니다.</p>
         ) : (
@@ -246,6 +257,26 @@ function OrderLog({
                   <li key={name}>{name}</li>
                 ))}
               </ul>
+            )}
+            {day.notes.length > 0 && (
+              <section className="order-notes">
+                <h3>업종별로 보면</h3>
+                <ul>
+                  {day.notes.map((note) => (
+                    <li key={note.sector}>
+                      <b>{note.sector}</b>
+                      {note.lines.map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                      <span className="order-note-names">
+                        {note.names.map((name) => (
+                          <em key={name}>{name}</em>
+                        ))}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             )}
             <ol className="order-log-picks">
               {day.picks.map((pick) => (
