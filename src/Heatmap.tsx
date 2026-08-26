@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import type { CellNode } from "./lib/treemap";
-import { buildTree, isStock, layoutTreemap } from "./lib/treemap";
+import type { CellNode, OtherGroup } from "./lib/treemap";
+import { buildTree, isOther, isStock, layoutTreemap } from "./lib/treemap";
 import { changeColor, changeTextColor, formatCap, formatChange, formatPrice } from "./lib/format";
 import { priceZone, ZONE_HINT, ZONE_LABEL } from "./lib/setup";
 import type { Market, SizeMode, Stock } from "./types";
@@ -51,6 +51,7 @@ export function Heatmap({
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [tooltip, setTooltip] = useState<Tooltip | null>(null);
   const [docked, setDocked] = useState(false);
+  const [bundle, setBundle] = useState<OtherGroup | null>(null);
 
   const openDock = (stock: Stock) => {
     pinRef.current?.(stock);
@@ -74,6 +75,7 @@ export function Heatmap({
     const onPin = (e: MouseEvent) => {
       const coarse = window.matchMedia("(pointer: coarse)").matches;
       const cell = (e.target as Element | null)?.closest?.("g.cell");
+      if (cell?.classList.contains("cell-other")) return;
       const code = cell?.getAttribute("data-code");
       if (!code) {
         if (coarse) {
@@ -108,13 +110,20 @@ export function Heatmap({
   useEffect(() => {
     setDocked(false);
     setTooltip(null);
+    setBundle(null);
   }, [zoom]);
 
   useEffect(() => {
     if (!docked) return;
     const onDoc = (e: MouseEvent) => {
       const t = e.target as Element | null;
-      if (t?.closest(".tip-dock") || t?.closest(".map-rest-row") || t?.closest("g.cell")) return;
+      if (
+        t?.closest(".tip-dock") ||
+        t?.closest(".map-rest-row") ||
+        t?.closest(".map-bundle") ||
+        t?.closest("g.cell")
+      )
+        return;
       setDocked(false);
       setTooltip(null);
     };
@@ -124,6 +133,20 @@ export function Heatmap({
       document.removeEventListener("click", onDoc);
     };
   }, [docked]);
+
+  useEffect(() => {
+    if (!bundle) return;
+    const onDoc = (e: MouseEvent) => {
+      const t = e.target as Element | null;
+      if (t?.closest(".map-bundle") || t?.closest("g.cell-other") || t?.closest(".tip-dock")) return;
+      setBundle(null);
+    };
+    const id = window.setTimeout(() => document.addEventListener("click", onDoc), 0);
+    return () => {
+      window.clearTimeout(id);
+      document.removeEventListener("click", onDoc);
+    };
+  }, [bundle]);
 
   const tree = useMemo(
     () => buildTree(stocks, market, sizeMode),
@@ -227,7 +250,7 @@ export function Heatmap({
         <svg width={size.w} height={size.h} className="map">
           {sectors.map((sector) => {
             const d = sector.data;
-            if (isStock(d)) return null;
+            if (isStock(d) || isOther(d)) return null;
             const label = "name" in d ? d.name : "";
             const w = sector.x1 - sector.x0;
             const barH = compact ? 30 : 22;
@@ -256,11 +279,70 @@ export function Heatmap({
             );
           })}
           {cells.map((node: CellNode) => {
-            const stock = node.data;
-            if (!isStock(stock)) return null;
+            const d = node.data;
             const w = node.x1 - node.x0;
             const h = node.y1 - node.y0;
             if (w < 2 || h < 2) return null;
+            if (isOther(d)) {
+              const match =
+                !highlight ||
+                d.stocks.some(
+                  (s) =>
+                    s.name.toLowerCase().includes(highlight) || s.code.includes(highlight),
+                );
+              const font = compact
+                ? Math.max(12, Math.min(16, w / 5.4, h / 2.6))
+                : Math.max(11, Math.min(15, w / 7, h / 3.2));
+              const showName = compact ? w >= 64 && h >= 36 : w >= 44 && h >= 28;
+              const showPct = compact
+                ? w >= 52 && h >= (showName ? 52 : 30)
+                : w >= 44 && h >= 42;
+              const flashing = d.stocks.some((s) => flashCodes?.has(s.code));
+              return (
+                <g
+                  key={`other-${d.sector}`}
+                  className={["cell", "cell-other", match ? "" : "dim", flashing ? "flash" : ""]
+                    .filter(Boolean)
+                    .join(" ")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDocked(false);
+                    setTooltip(null);
+                    setBundle(d);
+                  }}
+                >
+                  <rect
+                    x={node.x0}
+                    y={node.y0}
+                    width={w}
+                    height={h}
+                    fill={changeColor(d.change)}
+                  />
+                  {showName && (
+                    <text
+                      x={node.x0 + w / 2}
+                      y={node.y0 + h / 2 - (showPct ? 6 : 0)}
+                      className="cell-name"
+                      fontSize={font}
+                    >
+                      {clipLabel(d.name, w - 8, font)}
+                    </text>
+                  )}
+                  {showPct && (
+                    <text
+                      x={node.x0 + w / 2}
+                      y={node.y0 + h / 2 + font}
+                      className="cell-pct"
+                      fontSize={compact ? Math.max(12, font - 1) : Math.max(10, font - 1)}
+                    >
+                      {formatChange(d.change)}
+                    </text>
+                  )}
+                </g>
+              );
+            }
+            const stock = d;
+            if (!isStock(stock)) return null;
             const match =
               !highlight ||
               stock.name.toLowerCase().includes(highlight) ||
@@ -339,7 +421,37 @@ export function Heatmap({
         </svg>
       )}
       {root && stocks.length > 0 && (
-        <p className="map-hint">칸을 누르면 관심 · 업종 이름을 누르면 확대 · 색은 등락률</p>
+        <p className="map-hint">칸을 누르면 관심 · 업종 이름을 누르면 확대 · 작은 칸은 기타 · 색은 등락률</p>
+      )}
+      {bundle && (
+        <div className="map-bundle" onClick={(e) => e.stopPropagation()}>
+          <div className="map-rest-head">
+            <span>
+              {bundle.sector} · 기타 {bundle.stocks.length}종목
+            </span>
+            <button type="button" className="map-bundle-close" onClick={() => setBundle(null)}>
+              닫기
+            </button>
+          </div>
+          {bundle.stocks.map((stock) => (
+            <button
+              key={`${stock.market}-${stock.code}`}
+              type="button"
+              className={`map-rest-row${pinned?.has(stock.code) ? " pinned" : ""}`}
+              onClick={() => openDock(stock)}
+            >
+              <span>
+                <span className="map-rest-name">{stock.name}</span>
+                <span className="map-rest-sub">
+                  {stock.market} · {formatCap(stock.marketCap)}
+                </span>
+              </span>
+              <b className="map-rest-chg" style={{ color: changeTextColor(stock.change) }}>
+                {formatChange(stock.change)}
+              </b>
+            </button>
+          ))}
+        </div>
       )}
       </div>
       {listed.length > 0 && (
