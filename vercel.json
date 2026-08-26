@@ -1,5 +1,19 @@
 {
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
+  "rewrites": [
+    {
+      "source": "/api/naver/:path*",
+      "destination": "https://polling.finance.naver.com/:path*"
+    },
+    {
+      "source": "/api/mstock/:path*",
+      "destination": "https://m.stock.naver.com/:path*"
+    },
+    {
+      "source": "/api/finance/:path*",
+      "destination": "https://finance.naver.com/:path*"
+    },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/assets/:path*",
