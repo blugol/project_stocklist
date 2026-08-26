@@ -1050,11 +1050,91 @@ input[type="search"]::-webkit-search-cancel-button {
 .map-wrap {
   position: relative;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: #070708;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
+}
+
+.map-canvas {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.map-rest {
+  display: none;
+  flex: 1 1 52%;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  border-top: 1px solid var(--line);
+  background: #0c0c0f;
+}
+
+.map-wrap.has-list .map-canvas {
+  flex: 0 1 42%;
+  min-height: 120px;
+}
+
+.map-wrap.has-list .map-rest {
+  display: block;
+}
+
+.map-rest-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 12px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  background: #0c0c0f;
+}
+
+.map-rest-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 48px;
+  padding: 8px 12px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 0;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.map-rest-row.pinned {
+  background: var(--gold-dim);
+}
+
+.map-rest-name {
+  display: block;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.map-rest-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.map-rest-chg {
+  flex: 0 0 auto;
+  font-weight: 700;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
 }
 
 .map-empty {
@@ -1163,11 +1243,31 @@ input[type="search"]::-webkit-search-cancel-button {
 }
 
 .tip-dock {
+  pointer-events: auto;
   left: 10px;
   right: 10px;
   top: auto;
   bottom: 10px;
   width: auto;
+}
+
+.tip-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tip-close {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
 }
 
 .tip-name {
@@ -1752,7 +1852,17 @@ input[type="search"]::-webkit-search-cancel-button {
   }
 
   .tip-dock {
+    position: fixed;
+    left: 12px;
+    right: 12px;
     width: auto;
+    max-width: none;
+    top: auto;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    max-height: 42dvh;
+    overflow: auto;
+    z-index: 40;
+    pointer-events: auto;
   }
 
   .tip-name {
