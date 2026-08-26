@@ -187,7 +187,7 @@ export default function App() {
             ))}
             <div className="idx">
               <span className="idx-name">시총가중</span>
-              <b className={avg >= 0 ? "up" : "down"}>
+              <b className={`idx-val ${avg >= 0 ? "up" : "down"}`}>
                 {avg >= 0 ? "+" : ""}
                 {avg.toFixed(2)}%
               </b>

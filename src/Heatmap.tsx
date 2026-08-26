@@ -154,14 +154,14 @@ export function Heatmap({
               stock.name.toLowerCase().includes(highlight) ||
               stock.code.includes(highlight);
             const font = compact
-              ? Math.max(13, Math.min(18, w / 5.2, h / 2.4))
+              ? Math.max(12, Math.min(16, w / 5.4, h / 2.6))
               : Math.max(11, Math.min(15, w / 7, h / 3.2));
             const nameBudget = Math.floor((w - 10) / (font * 1.08));
             const showName = compact
-              ? w >= 72 && h >= 40 && nameBudget >= 3
+              ? w >= 64 && h >= 36 && nameBudget >= 3
               : w >= 44 && h >= 28;
             const showPct = compact
-              ? w >= 58 && h >= (showName ? 56 : 32)
+              ? w >= 52 && h >= (showName ? 52 : 30)
               : w >= 44 && h >= 42;
             const flashing = flashCodes?.has(stock.code);
             const isPinned = pinned?.has(stock.code);
