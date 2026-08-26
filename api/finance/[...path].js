@@ -1,11 +1,7 @@
 import { proxyNaver } from "../../utils/naver-proxy.js";
 
-export default async function handler(req, res) {
-  try {
-    await proxyNaver(req, res, "https://finance.naver.com", "https://finance.naver.com/");
-  } catch {
-    res.status(502).end();
-  }
-}
+export const config = { runtime: "edge", regions: ["icn1"] };
 
-export const config = { regions: ["icn1"] };
+export default function handler(req) {
+  return proxyNaver(req, "https://finance.naver.com", "https://finance.naver.com/");
+}
