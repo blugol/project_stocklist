@@ -85,16 +85,19 @@ export function rememberOrder(order: WatchOrder, session: Session): void {
     picks,
   };
   const prev = loadOrderLog().find((day) => day.date === date);
-  if (
-    prev &&
+  const same =
+    !!prev &&
     prev.session === next.session &&
     JSON.stringify(prev.picks) === JSON.stringify(next.picks) &&
-    JSON.stringify(prev.sectors) === JSON.stringify(next.sectors)
-  ) {
-    return;
-  }
+    JSON.stringify(prev.sectors) === JSON.stringify(next.sectors);
   const log = [next, ...loadOrderLog().filter((day) => day.date !== date)].slice(0, MAX_DAYS);
-  localStorage.setItem(KEY, JSON.stringify(log));
+  if (!same) localStorage.setItem(KEY, JSON.stringify(log));
+  const saved = loadOrderLog();
+  void fetch("/dev/order-log", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: formatOrderLog(saved) }),
+  }).catch(() => {});
 }
 
 export function formatOrderDay(day: OrderLogDay): string {

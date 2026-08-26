@@ -1,5 +1,39 @@
-import { defineConfig, type ProxyOptions } from "vite";
+import fs from "node:fs";
+import path from "node:path";
+import { defineConfig, type Plugin, type ProxyOptions } from "vite";
 import react from "@vitejs/plugin-react";
+
+function orderLogFile(): Plugin {
+  return {
+    name: "order-log-file",
+    configureServer(server) {
+      server.middlewares.use("/dev/order-log", (req, res, next) => {
+        if (req.method !== "POST") {
+          next();
+          return;
+        }
+        const chunks: Buffer[] = [];
+        req.on("data", (chunk) => {
+          chunks.push(chunk as Buffer);
+        });
+        req.on("end", () => {
+          try {
+            const body = JSON.parse(Buffer.concat(chunks).toString("utf8")) as { text?: string };
+            if (typeof body.text !== "string") throw new Error("text");
+            const dir = path.resolve(server.config.root, "기록");
+            fs.mkdirSync(dir, { recursive: true });
+            fs.writeFileSync(path.join(dir, "금일주도주.txt"), body.text, "utf8");
+            res.statusCode = 204;
+            res.end();
+          } catch {
+            res.statusCode = 400;
+            res.end();
+          }
+        });
+      });
+    },
+  };
+}
 
 const proxy: Record<string, ProxyOptions> = {
   "/api/naver": {
@@ -35,7 +69,7 @@ const proxy: Record<string, ProxyOptions> = {
 };
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), orderLogFile()],
   server: {
     port: 5173,
     host: true,
