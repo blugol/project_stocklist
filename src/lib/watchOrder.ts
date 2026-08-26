@@ -153,7 +153,7 @@ export function watchOrderLead(order: WatchOrder): WatchLead {
   const sectors = notes.slice(0, 3).map((n) => n.sector);
   return {
     sectors: sectors.length ? sectors : ["동조 업종"],
-    lines: ["시총 대장만 적었습니다.", "타점은 HTS 3분봉입니다."],
+    lines: ["시총 대장만 적었습니다."],
   };
 }
 

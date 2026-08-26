@@ -228,13 +228,13 @@ export default function App() {
                 type="button"
                 className={`guide-open order-open ${orderOpen ? "on" : ""}`}
                 aria-expanded={orderOpen}
-                title="동조 업종의 대장을 보는 순서대로 엽니다"
+                title="동조 업종의 시총 대장을 엽니다"
                 onClick={() => {
                   setGuide(false);
                   setOrderOpen(true);
                 }}
               >
-                어디 볼지
+                금일 주도주
                 {watchOrder.early.length > 0 && (
                   <i className="order-count">{watchOrder.early.length}</i>
                 )}
@@ -243,13 +243,13 @@ export default function App() {
                 type="button"
                 className={`guide-open ${guide ? "on" : ""}`}
                 aria-expanded={guide}
-                title="이 화면을 어떤 기준으로 보면 되는지 엽니다"
+                title="동조와 구간 기준을 엽니다"
                 onClick={() => {
                   setOrderOpen(false);
                   setGuide(true);
                 }}
               >
-                쓰는 법
+                기준
               </button>
             </div>
           </div>

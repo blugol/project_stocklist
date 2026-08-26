@@ -17,7 +17,7 @@ export const ZONE_LABEL: Record<PriceZone, string> = {
 };
 
 export const ZONE_HINT: Record<PriceZone, string> = {
-  down: "당일 하락. 돌파·눌림 타점이 아닙니다.",
+  down: "당일 하락.",
   early: "10% 미만. 돌파 관점.",
   mid: "10~15%. 추격보다 흐름만 봅니다.",
   high: "15% 이상. 눌림을 기다립니다.",

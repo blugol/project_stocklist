@@ -100,8 +100,8 @@ export function rememberOrder(order: WatchOrder, session: Session): void {
 export function formatOrderDay(day: OrderLogDay): string {
   const session = day.session === "OPEN" ? "정규장" : "장마감";
   const lines = [
-    `시황 창 어디 볼지  ${formatLogDate(day.date)}`,
-    `${session}. 매수 사인이 아닙니다. 타점은 HTS 3분봉입니다.`,
+    `금일 주도주  ${formatLogDate(day.date)}`,
+    session,
     "",
   ];
   if (!day.picks.length) {

@@ -29,29 +29,25 @@ export function Guide({ open, onClose }: GuideProps) {
       >
         <header className="guide-top">
           <div>
-            <p className="guide-kicker">이 화면에서 볼 것</p>
-            <h2 id="guide-title">쓰는 법</h2>
+            <p className="guide-kicker">동조 · 구간</p>
+            <h2 id="guide-title">기준</h2>
           </div>
           <button type="button" className="guide-close" onClick={onClose} title="닫기">
             닫기
           </button>
         </header>
 
-        <p className="guide-lead">
-          여기는 시황 창입니다. 오늘 햄버거를 어디에 대입할지 고릅니다. 3분봉 타점은 HTS에서
-          봅니다.
-        </p>
+        <p className="guide-lead">동조 업종의 시총 대장을 고르고, 구간을 봅니다.</p>
 
         <ol className="guide-steps">
           <li>
             <b>동조 섹터</b>
-            기여도 1등보다, 윗물이 같이 빨간 업종을 먼저 봅니다. 어디 볼지 창은 어디를 돌파·눌림으로
-            볼지입니다. 종목 개수가 아닙니다.
+            기여도 1등보다, 윗물이 같이 빨간 업종을 먼저 봅니다.
           </li>
           <li>
             <b>대장 1~2개</b>
             그 업종을 눌러 확대하고, 코스피·코스닥 시총 대장만 관심에 담습니다. 등락률 1등이
-            대장이 아닙니다.
+            아닙니다.
           </li>
           <li>
             <b>구간</b>
@@ -100,8 +96,8 @@ export function Guide({ open, onClose }: GuideProps) {
         <section>
           <h3>쓰지 않는 신호</h3>
           <p>
-            칸이 번쩍이는 것은 15초 동안 거래대금이 늘어난 표시입니다. 과거 급등일의 3분 체력이
-            아닙니다. 알림음도 관심 종목이 등락 기준을 넘었다는 뜻이지 매수 사인이 아닙니다.
+            칸이 번쩍이는 것은 15초 동안 거래대금이 늘어난 표시입니다. 알림음은 관심 종목이 등락
+            기준을 넘었다는 뜻입니다.
           </p>
         </section>
       </aside>
