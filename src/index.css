@@ -692,6 +692,142 @@ input:focus-visible {
   cursor: not-allowed;
 }
 
+.order-switch {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 16px;
+}
+
+.order-switch button {
+  flex: 1;
+  min-height: 36px;
+  background: var(--bg-soft);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.order-switch button.on {
+  color: var(--gold);
+  border-color: rgba(224, 195, 106, 0.45);
+  background: var(--gold-dim);
+}
+
+.order-log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-log-list button {
+  width: 100%;
+  text-align: left;
+  background: var(--bg-soft);
+  color: inherit;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.order-log-list b,
+.order-log-day h3 {
+  display: block;
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+
+.order-log-list span,
+.order-log-day p,
+.order-log-picks em {
+  display: block;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.order-log-list span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-log-back {
+  background: none;
+  color: var(--gold);
+  border: 0;
+  padding: 0;
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.order-log-picks {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.order-log-picks li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.order-log-picks b {
+  display: block;
+  font-size: 15px;
+}
+
+.order-log-picks strong {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.order-log-day .order-hero-tags {
+  margin-top: 10px;
+}
+
+.order-log-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.order-log-actions button {
+  flex: 1;
+  min-height: 40px;
+  background: var(--bg-soft);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.order-log-hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--gold);
+}
+
 @media (max-width: 860px) {
   .order-list li {
     grid-template-columns: minmax(0, 1fr) 56px;
@@ -1586,6 +1722,20 @@ input[type="search"]::-webkit-search-cancel-button {
   }
 
   .order-title {
+    font-size: 16px;
+  }
+
+  .order-switch button {
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  .order-log-list b,
+  .order-log-day h3 {
+    font-size: 16px;
+  }
+
+  .order-log-picks b {
     font-size: 16px;
   }
 

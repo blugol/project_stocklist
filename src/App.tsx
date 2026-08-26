@@ -11,6 +11,7 @@ import { formatChange, formatIndex, formatTime } from "./lib/format";
 import { fetchIndexes, fetchLiveQuotes, type IndexQuote, type Session } from "./lib/quotes";
 import { sectorStats } from "./lib/sectors";
 import { syncSectors } from "./lib/setup";
+import { rememberOrder } from "./lib/orderLog";
 import { buildWatchOrder } from "./lib/watchOrder";
 import { applyTicks, crossedAlert } from "./lib/ticks";
 import { fetchMarketItems, fetchSectorMap, stocksFromItems } from "./lib/universe";
@@ -147,7 +148,19 @@ export default function App() {
     const contribution = new Map(stats.map((s) => [s.name, s.contribution]));
     return buildWatchOrder(scoped, synced, contribution);
   }, [scoped, synced, stats]);
+  const logOrder = useMemo(() => {
+    if (market === "ALL") return watchOrder;
+    const allStats = sectorStats(stocks);
+    const allSynced = syncSectors(stocks);
+    const contribution = new Map(allStats.map((s) => [s.name, s.contribution]));
+    return buildWatchOrder(stocks, allSynced, contribution);
+  }, [market, watchOrder, stocks]);
   const sectorCount = useMemo(() => new Set(scoped.map((s) => s.sector)).size, [scoped]);
+
+  useEffect(() => {
+    if (live !== "live") return;
+    rememberOrder(logOrder, session);
+  }, [live, logOrder, session]);
 
   const avg =
     scoped.reduce((s, x) => s + x.change * x.marketCap, 0) /
