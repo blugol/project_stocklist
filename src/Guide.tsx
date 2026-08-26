@@ -30,7 +30,7 @@ export function Guide({ open, onClose }: GuideProps) {
         <header className="guide-top">
           <div>
             <p className="guide-kicker">이 화면에서 볼 것</p>
-            <h2 id="guide-title">보는 법</h2>
+            <h2 id="guide-title">쓰는 법</h2>
           </div>
           <button type="button" className="guide-close" onClick={onClose} title="닫기">
             닫기
@@ -45,7 +45,7 @@ export function Guide({ open, onClose }: GuideProps) {
         <ol className="guide-steps">
           <li>
             <b>동조 섹터</b>
-            기여도 1등보다, 윗물이 같이 빨간 업종을 먼저 봅니다. 볼 순서 창은 어디를 돌파·눌림으로
+            기여도 1등보다, 윗물이 같이 빨간 업종을 먼저 봅니다. 어디 볼지 창은 어디를 돌파·눌림으로
             볼지입니다. 종목 개수가 아닙니다.
           </li>
           <li>
@@ -81,7 +81,7 @@ export function Guide({ open, onClose }: GuideProps) {
 
         <section>
           <h3>등락 구간</h3>
-          <ul>
+          <ul className="guide-zones">
             <li>
               <em className="zone zone-down">하락</em> 0% 미만. 후보에서 뺍니다.
             </li>

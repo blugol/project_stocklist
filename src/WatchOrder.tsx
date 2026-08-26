@@ -84,15 +84,15 @@ export function WatchOrderPanel({
       >
         <header className="guide-top">
           <div>
-            <p className="guide-kicker">{view === "today" ? "오늘 어디를 볼지" : "날짜별로 남긴 볼 순서"}</p>
-            <h2 id="order-title">{view === "today" ? "볼 순서" : "기록"}</h2>
+            <p className="guide-kicker">{view === "today" ? "오늘 어디를 볼지" : "날짜별로 남긴 목록"}</p>
+            <h2 id="order-title">{view === "today" ? "어디 볼지" : "기록"}</h2>
           </div>
           <button type="button" className="guide-close" onClick={onClose} title="닫기">
             닫기
           </button>
         </header>
 
-        <div className="order-switch" role="tablist" aria-label="볼 순서와 기록">
+        <div className="order-switch" role="tablist" aria-label="어디 볼지와 기록">
           <button
             type="button"
             role="tab"
@@ -135,9 +135,9 @@ export function WatchOrderPanel({
               setHint("");
             }}
             onCopyDay={async (row) => tell(await copyText(formatOrderDay(row)))}
-            onSaveDay={(row) => downloadText(`볼순서-${row.date}.txt`, formatOrderDay(row))}
+            onSaveDay={(row) => downloadText(`어디볼지-${row.date}.txt`, formatOrderDay(row))}
             onCopyAll={async () => tell(await copyText(formatOrderLog(days)))}
-            onSaveAll={() => downloadText("볼순서-기록.txt", formatOrderLog(days))}
+            onSaveAll={() => downloadText("어디볼지-기록.txt", formatOrderLog(days))}
           />
         ) : !lead ? (
           <p className="guide-lead">지금은 동조 업종이 없습니다. 윗물이 같이 오를 때까지 기다립니다.</p>
@@ -280,7 +280,7 @@ function OrderLog({
   if (!days.length) {
     return (
       <p className="guide-lead">
-        아직 쌓인 날이 없습니다. 시세가 뜨면 오늘 볼 순서부터 이 기기에 남깁니다.
+        아직 쌓인 날이 없습니다. 시세가 뜨면 오늘 어디 볼지부터 이 기기에 남깁니다.
       </p>
     );
   }
