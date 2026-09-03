@@ -22,7 +22,7 @@ function orderLogFile(): Plugin {
             if (typeof body.text !== "string") throw new Error("text");
             const dir = path.resolve(server.config.root, "기록");
             fs.mkdirSync(dir, { recursive: true });
-            fs.writeFileSync(path.join(dir, "금일주도주.txt"), body.text, "utf8");
+            fs.writeFileSync(path.join(dir, "금일대장.txt"), body.text, "utf8");
             res.statusCode = 204;
             res.end();
           } catch {

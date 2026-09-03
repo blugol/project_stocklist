@@ -234,7 +234,7 @@ export default function App() {
                   setOrderOpen(true);
                 }}
               >
-                금일 주도주
+                금일 대장
                 {watchOrder.early.length > 0 && (
                   <i className="order-count">{watchOrder.early.length}</i>
                 )}

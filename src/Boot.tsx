@@ -9,7 +9,7 @@ export function Boot({ done, total }: BootProps) {
     <div className="boot">
       <div className="boot-inner">
         <p className="boot-kicker">코스피 · 코스닥</p>
-        <h1>금일 주도주</h1>
+        <h1>금일 대장</h1>
         <p className="boot-copy">동조 업종의 시총 대장을 고릅니다.</p>
         <ol className="boot-steps">
           <li>동조 업종</li>

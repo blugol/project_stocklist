@@ -85,14 +85,14 @@ export function WatchOrderPanel({
         <header className="guide-top">
           <div>
             <p className="guide-kicker">{view === "today" ? "동조 업종 대장" : "날짜별 목록"}</p>
-            <h2 id="order-title">{view === "today" ? "금일 주도주" : "기록"}</h2>
+            <h2 id="order-title">{view === "today" ? "금일 대장" : "기록"}</h2>
           </div>
           <button type="button" className="guide-close" onClick={onClose} title="닫기">
             닫기
           </button>
         </header>
 
-        <div className="order-switch" role="tablist" aria-label="금일 주도주와 기록">
+        <div className="order-switch" role="tablist" aria-label="금일 대장과 기록">
           <button
             type="button"
             role="tab"
@@ -135,9 +135,9 @@ export function WatchOrderPanel({
               setHint("");
             }}
             onCopyDay={async (row) => tell(await copyText(formatOrderDay(row)))}
-            onSaveDay={(row) => downloadText(`금일주도주-${row.date}.txt`, formatOrderDay(row))}
+            onSaveDay={(row) => downloadText(`금일대장-${row.date}.txt`, formatOrderDay(row))}
             onCopyAll={async () => tell(await copyText(formatOrderLog(days)))}
-            onSaveAll={() => downloadText("금일주도주-기록.txt", formatOrderLog(days))}
+            onSaveAll={() => downloadText("금일대장-기록.txt", formatOrderLog(days))}
           />
         ) : !lead ? (
           <p className="guide-lead">지금은 동조 업종이 없습니다. 윗물이 같이 오를 때까지 기다립니다.</p>

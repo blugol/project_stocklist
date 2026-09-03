@@ -128,7 +128,7 @@ export function rememberOrder(
 export function formatOrderDay(day: OrderLogDay): string {
   const session = day.session === "OPEN" ? "정규장" : "장마감";
   const lines = [
-    `금일 주도주  ${formatLogDate(day.date)}`,
+    `금일 대장  ${formatLogDate(day.date)}`,
     session,
   ];
   for (const idx of day.indexes ?? []) {
