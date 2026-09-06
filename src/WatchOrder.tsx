@@ -5,8 +5,11 @@ import {
   downloadText,
   formatLogDate,
   formatOrderDay,
+  formatOrderFlow,
   formatOrderLog,
   loadOrderLog,
+  orderLogFlow,
+  type OrderLogCount,
   type OrderLogDay,
 } from "./lib/orderLog";
 import { ZONE_HINT, ZONE_LABEL } from "./lib/setup";
@@ -42,7 +45,7 @@ export function WatchOrderPanel({
   onFocus,
   onTogglePin,
 }: WatchOrderProps) {
-  const [view, setView] = useState<"today" | "log">("today");
+  const [view, setView] = useState<"today" | "log" | "flow">("today");
   const [days, setDays] = useState<OrderLogDay[]>([]);
   const [picked, setPicked] = useState<string | null>(null);
   const [hint, setHint] = useState("");
@@ -84,15 +87,17 @@ export function WatchOrderPanel({
       >
         <header className="guide-top">
           <div>
-            <p className="guide-kicker">{view === "today" ? "동조 업종 대장" : "날짜별 목록"}</p>
-            <h2 id="order-title">{view === "today" ? "금일 대장" : "기록"}</h2>
+            <p className="guide-kicker">
+              {view === "today" ? "동조 업종 대장" : view === "log" ? "날짜별 목록" : "쌓인 날로 센 것"}
+            </p>
+            <h2 id="order-title">{view === "today" ? "금일 대장" : view === "log" ? "기록" : "흐름"}</h2>
           </div>
           <button type="button" className="guide-close" onClick={onClose} title="닫기">
             닫기
           </button>
         </header>
 
-        <div className="order-switch" role="tablist" aria-label="금일 대장과 기록">
+        <div className="order-switch" role="tablist" aria-label="금일 대장 보기">
           <button
             type="button"
             role="tab"
@@ -117,11 +122,32 @@ export function WatchOrderPanel({
               setHint("");
             }}
           >
-            기록
+            날짜
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={view === "flow"}
+            className={view === "flow" ? "on" : ""}
+            onClick={() => {
+              setView("flow");
+              setPicked(null);
+              setDays(loadOrderLog());
+              setHint("");
+            }}
+          >
+            흐름
           </button>
         </div>
 
-        {view === "log" ? (
+        {view === "flow" ? (
+          <OrderFlow
+            days={days}
+            hint={hint}
+            onCopy={async () => tell(await copyText(formatOrderFlow(days)))}
+            onSave={() => downloadText("금일대장-흐름.txt", formatOrderFlow(days))}
+          />
+        ) : view === "log" ? (
           <OrderLog
             days={days}
             day={day}
@@ -202,6 +228,99 @@ export function WatchOrderPanel({
         )}
       </aside>
     </div>
+  );
+}
+
+function countLine(row: OrderLogCount): string {
+  return row.streak > 1 ? `${row.days}일 · 최근 ${row.streak}일 연속` : `${row.days}일`;
+}
+
+function OrderFlow({
+  days,
+  hint,
+  onCopy,
+  onSave,
+}: {
+  days: OrderLogDay[];
+  hint: string;
+  onCopy: () => void;
+  onSave: () => void;
+}) {
+  if (days.length < 2) {
+    return (
+      <p className="guide-lead">
+        {days.length === 0
+          ? "아직 쌓인 날이 없습니다. 시세가 뜨면 오늘 목록부터 이 기기에 남깁니다."
+          : "하루만 있습니다. 며칠 쌓이면 어떤 종목·업종이 반복됐는지 나옵니다."}
+      </p>
+    );
+  }
+
+  const flow = orderLogFlow(days);
+  return (
+    <section className="order-flow">
+      <p className="guide-lead">
+        지난 {days.length}일로 센 겁니다. 내일 볼 목록이 아닙니다.
+      </p>
+      <section className="order-notes">
+        <h3>이번 주 동조 업종</h3>
+        <p>{flow.weekLabel}</p>
+        {flow.weekSectors.length ? (
+          <ul className="order-flow-list">
+            {flow.weekSectors.map((row) => (
+              <li key={row.name}>
+                <b>{row.name}</b>
+                <span>{countLine(row)}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>이번 주 기록이 없습니다.</p>
+        )}
+      </section>
+      <section className="order-notes">
+        <h3>이번 달 동조 업종</h3>
+        <p>{flow.monthLabel}</p>
+        {flow.monthSectors.length ? (
+          <ul className="order-flow-list">
+            {flow.monthSectors.map((row) => (
+              <li key={row.name}>
+                <b>{row.name}</b>
+                <span>{countLine(row)}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>이번 달 기록이 없습니다.</p>
+        )}
+      </section>
+      <section className="order-notes">
+        <h3>여러 날 나온 대장</h3>
+        <p>이틀 이상 나온 종목입니다.</p>
+        {flow.stocks.length ? (
+          <ul className="order-flow-list">
+            {flow.stocks.map((row) => (
+              <li key={`${row.name}-${row.extra}`}>
+                <b>{row.name}</b>
+                <em>{row.extra}</em>
+                <span>{countLine(row)}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>이틀 이상 나온 종목이 없습니다.</p>
+        )}
+      </section>
+      <div className="order-log-actions">
+        <button type="button" onClick={onCopy}>
+          흐름 복사
+        </button>
+        <button type="button" onClick={onSave}>
+          txt 받기
+        </button>
+      </div>
+      {hint && <p className="order-log-hint">{hint}</p>}
+    </section>
   );
 }
 

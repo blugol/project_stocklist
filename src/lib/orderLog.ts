@@ -118,10 +118,13 @@ export function rememberOrder(
   const log = [next, ...loadOrderLog().filter((day) => day.date !== date)].slice(0, MAX_DAYS);
   if (!same) localStorage.setItem(KEY, JSON.stringify(log));
   const saved = loadOrderLog();
+  const text = saved.length
+    ? `${formatOrderFlow(saved)}\n\n========\n\n${formatOrderLog(saved)}`
+    : formatOrderLog(saved);
   void fetch("/dev/order-log", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text: formatOrderLog(saved) }),
+    body: JSON.stringify({ text }),
   }).catch(() => {});
 }
 
@@ -161,6 +164,129 @@ export function formatOrderDay(day: OrderLogDay): string {
 
 export function formatOrderLog(days: OrderLogDay[]): string {
   return days.map(formatOrderDay).join("\n\n--------\n\n");
+}
+
+function addDays(date: string, n: number): string {
+  const t = Date.parse(`${date}T12:00:00+09:00`) + n * 86_400_000;
+  return new Date(t).toLocaleDateString("en-CA", { timeZone: "Asia/Seoul" });
+}
+
+function weekStart(date: string): string {
+  const dow = new Date(`${date}T12:00:00+09:00`).getUTCDay();
+  return addDays(date, dow === 0 ? -6 : 1 - dow);
+}
+
+function appearStreak(hit: Set<string>, newestFirst: string[]): number {
+  let n = 0;
+  for (const date of newestFirst) {
+    if (!hit.has(date)) break;
+    n += 1;
+  }
+  return n;
+}
+
+export interface OrderLogCount {
+  name: string;
+  extra: string;
+  days: number;
+  streak: number;
+}
+
+export interface OrderLogFlow {
+  weekLabel: string;
+  monthLabel: string;
+  weekSectors: OrderLogCount[];
+  monthSectors: OrderLogCount[];
+  stocks: OrderLogCount[];
+}
+
+function countSectors(
+  days: OrderLogDay[],
+  newestFirst: string[],
+  keep: (date: string) => boolean,
+): OrderLogCount[] {
+  const map = new Map<string, string[]>();
+  for (const day of days) {
+    if (!keep(day.date)) continue;
+    const names = day.sectors.length
+      ? day.sectors
+      : [...new Set(day.picks.map((pick) => pick.sector))];
+    for (const name of names) {
+      const list = map.get(name) ?? [];
+      if (!list.includes(day.date)) list.push(day.date);
+      map.set(name, list);
+    }
+  }
+  return [...map.entries()]
+    .map(([name, dates]) => ({
+      name,
+      extra: "",
+      days: dates.length,
+      streak: appearStreak(new Set(dates), newestFirst.filter(keep)),
+    }))
+    .sort((a, b) => b.days - a.days || b.streak - a.streak);
+}
+
+export function orderLogFlow(days: OrderLogDay[], today = seoulDate()): OrderLogFlow {
+  const newestFirst = [...new Set(days.map((day) => day.date))].sort((a, b) => b.localeCompare(a));
+  const week0 = weekStart(today);
+  const month = today.slice(0, 7);
+  const inWeek = (date: string) => date >= week0;
+  const inMonth = (date: string) => date.startsWith(month);
+  const stocksMap = new Map<string, { name: string; extra: string; dates: string[] }>();
+  for (const day of days) {
+    for (const pick of day.picks) {
+      const row = stocksMap.get(pick.code) ?? { name: pick.name, extra: pick.sector, dates: [] };
+      if (!row.dates.includes(day.date)) row.dates.push(day.date);
+      stocksMap.set(pick.code, row);
+    }
+  }
+  const stocks = [...stocksMap.values()]
+    .map((row) => ({
+      name: row.name,
+      extra: row.extra,
+      days: row.dates.length,
+      streak: appearStreak(new Set(row.dates), newestFirst),
+    }))
+    .filter((row) => row.days > 1)
+    .sort((a, b) => b.days - a.days || b.streak - a.streak)
+    .slice(0, 16);
+  return {
+    weekLabel: `${formatLogDate(week0)}부터`,
+    monthLabel: `${Number(month.slice(5))}월`,
+    weekSectors: countSectors(days, newestFirst, inWeek).slice(0, 8),
+    monthSectors: countSectors(days, newestFirst, inMonth).slice(0, 8),
+    stocks,
+  };
+}
+
+export function formatOrderFlow(days: OrderLogDay[]): string {
+  const flow = orderLogFlow(days);
+  const lines = [
+    "금일 대장 흐름",
+    "쌓인 날로 센 겁니다. 내일 볼 목록이 아닙니다.",
+    "",
+    `이번 주 동조 업종  ${flow.weekLabel}`,
+  ];
+  if (!flow.weekSectors.length) lines.push("이번 주 기록이 없습니다.");
+  for (const row of flow.weekSectors) {
+    lines.push(`${row.name}  ${row.days}일${row.streak > 1 ? `  최근 ${row.streak}일 연속` : ""}`);
+  }
+  lines.push("");
+  lines.push(`이번 달 동조 업종  ${flow.monthLabel}`);
+  if (!flow.monthSectors.length) lines.push("이번 달 기록이 없습니다.");
+  for (const row of flow.monthSectors) {
+    lines.push(`${row.name}  ${row.days}일${row.streak > 1 ? `  최근 ${row.streak}일 연속` : ""}`);
+  }
+  lines.push("");
+  lines.push("여러 날 나온 대장");
+  if (!flow.stocks.length) lines.push("이틀 이상 나온 종목이 없습니다.");
+  for (const row of flow.stocks) {
+    lines.push(
+      `${row.name}  ${row.extra}  ${row.days}일${row.streak > 1 ? `  최근 ${row.streak}일 연속` : ""}`,
+    );
+  }
+  return lines.join("\n");
 }
 
 export function downloadText(filename: string, text: string): void {
