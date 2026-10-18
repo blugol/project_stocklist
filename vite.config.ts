@@ -71,10 +71,10 @@ const proxy: Record<string, ProxyOptions> = {
 export default defineConfig({
   plugins: [react(), orderLogFile()],
   server: {
-    port: 5173,
+    port: 5175,
     host: true,
     strictPort: true,
-    open: "http://localhost:5173/",
+    open: "http://localhost:5175/",
     allowedHosts: true,
     proxy,
   },

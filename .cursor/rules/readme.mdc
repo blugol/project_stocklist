@@ -1,18 +1,20 @@
 ---
-description: README.md가 이 프로젝트의 유일한 원칙이다. 작업이 끝나면 묻지 말고 커밋하고 푸시한다.
+description: README.md가 이 프로젝트의 원칙이다. 커밋은 로컬에만 하고, 푸시는 대표님 승인 후에만 한다.
 alwaysApply: true
 ---
+
+이 폴더도 `Project\.cursor\rules\team-rules.mdc` 와 `_bridge\common\TEAM_RULES.md` 를 따른다. 다르면 팀 규칙이 우선이다.
 
 # README가 원칙이다
 
 매 작업 전에 `README.md`를 읽고 그대로 따른다. README에 없는 규칙을 지어내지 않는다.
 
-## 배포
+## 배포·git
 
-코드를 고치거나 진행이 끝나면 사용자에게 묻지 말고 바로:
+코드를 고치거나 진행이 끝나면:
 
 1. 비밀 파일은 빼고 `git add`
-2. `git commit`
-3. `git push origin HEAD`
+2. `git commit` (로컬에만)
+3. **푸시는 대표님 승인 후에만 한다.** `git push`를 묻지 않고 실행하지 않는다.
 
-Vercel은 GitHub `main`을 배포한다. 로컬에만 두면 bat 화면과 Vercel 주소가 달라진다.
+Vercel은 GitHub `main`을 배포한다. 로컬 커밋만으로는 폰 Vercel 주소가 안 바뀐다. 배포가 필요하면 대표님 승인 후 push한다.
